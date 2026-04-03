@@ -1,5 +1,12 @@
 // ── Helpers ───────────────────────────────────────────────────
-const todayKey = () => new Date().toISOString().slice(0, 10); // "2024-04-03"
+// Lokales Datum (nicht UTC) — wichtig für deutsche Zeitzone
+const todayKey = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
 const categoryMeta = {
   essen:      { label: 'Essen & Trinken',  emoji: '🍔' },
@@ -674,6 +681,10 @@ document.querySelectorAll('.view-btn').forEach(btn => {
 
 // ── Excel Export ──────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click', () => {
+  if (typeof XLSX === 'undefined') {
+    alert('Export-Library nicht geladen. Bitte Seite neu laden.');
+    return;
+  }
   const wb = XLSX.utils.book_new();
 
   // ── Blatt 1: Alle Ausgaben ──
