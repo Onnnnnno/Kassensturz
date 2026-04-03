@@ -605,7 +605,7 @@ function drawPie(data) {
   // Donut-Loch
   ctx.beginPath();
   ctx.arc(cx, cy, 48, 0, 2 * Math.PI);
-  ctx.fillStyle = '#1a1d27';
+  ctx.fillStyle = '#111111';
   ctx.fill();
 
   // Gesamtbetrag in der Mitte

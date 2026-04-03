@@ -6,15 +6,15 @@
 }
 
 :root {
-  --bg:          #0f1117;
-  --surface:     #1a1d27;
-  --surface-2:   #22263a;
-  --border:      #2e3347;
-  --accent:      #6c63ff;
-  --accent-glow: rgba(108, 99, 255, 0.25);
+  --bg:          #000000;
+  --surface:     #111111;
+  --surface-2:   #1a1a1a;
+  --border:      #2a2a2a;
+  --accent:      #7c6fff;
+  --accent-glow: rgba(124, 111, 255, 0.2);
   --green:       #3ecf8e;
-  --text:        #e8eaf0;
-  --text-muted:  #7b82a0;
+  --text:        #ffffff;
+  --text-muted:  #888888;
   --danger:      #ff5c6c;
   --radius-card: 20px;
   --radius-btn:  14px;
@@ -78,7 +78,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, #1e1b3a 0%, #1a1d27 100%);
+  background: linear-gradient(135deg, #16123a 0%, #111111 100%);
   border-color: var(--accent-glow);
 }
 
