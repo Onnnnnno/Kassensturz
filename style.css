@@ -547,6 +547,55 @@ select option {
   color: var(--text-muted);
 }
 
+/* ── Push-Banner ──────────────────────────────────── */
+.notif-banner {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  margin: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notif-banner[hidden] { display: none; }
+
+.notif-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.notif-banner-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.notif-banner-btns button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.notif-banner-btns button:first-child {
+  background: var(--accent);
+  color: #fff;
+}
+
+.notif-banner-btns button:last-child {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
+
 /* ── Monatsbudget ─────────────────────────────────── */
 .budget-card {
   background: var(--surface);

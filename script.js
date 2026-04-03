@@ -672,6 +672,60 @@ document.querySelectorAll('.view-btn').forEach(btn => {
   });
 });
 
+// ── Push Notifications ────────────────────────────────────────
+let swRegistration = null;
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('/service-worker.js');
+  } catch (e) { console.warn('SW Registrierung fehlgeschlagen', e); }
+}
+
+function scheduleInSW() {
+  if (swRegistration?.active) {
+    swRegistration.active.postMessage({ type: 'SCHEDULE_REMINDER' });
+  } else if (swRegistration) {
+    const sw = swRegistration.installing || swRegistration.waiting;
+    sw?.addEventListener('statechange', () => {
+      if (sw.state === 'activated') {
+        sw.postMessage({ type: 'SCHEDULE_REMINDER' });
+      }
+    });
+  }
+}
+
+async function initNotifications() {
+  await registerSW();
+  const permission = Notification.permission;
+
+  // Schon erlaubt → direkt planen, kein Banner
+  if (permission === 'granted') {
+    scheduleInSW();
+    return;
+  }
+
+  // Abgelehnt → Banner nicht zeigen
+  if (permission === 'denied') return;
+
+  // Noch nicht entschieden → nur zeigen wenn noch nicht gefragt
+  if (localStorage.getItem('notif_asked')) return;
+  document.getElementById('notif-banner').hidden = false;
+}
+
+document.getElementById('notif-yes').addEventListener('click', async () => {
+  document.getElementById('notif-banner').hidden = true;
+  localStorage.setItem('notif_asked', '1');
+  const result = await Notification.requestPermission();
+  if (result === 'granted') scheduleInSW();
+});
+
+document.getElementById('notif-no').addEventListener('click', () => {
+  document.getElementById('notif-banner').hidden = true;
+  localStorage.setItem('notif_asked', '1');
+});
+
 // ── Start ─────────────────────────────────────────────────────
 init();
 renderAbos();
+initNotifications();
