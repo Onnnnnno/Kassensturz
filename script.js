@@ -176,7 +176,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('tab-ausgaben').hidden   = target !== 'ausgaben';
     document.getElementById('tab-abos').hidden       = target !== 'abos';
     document.getElementById('tab-uebersicht').hidden = target !== 'uebersicht';
-    if (target === 'uebersicht') renderUebersicht();
+    if (target === 'uebersicht') { renderUebersicht(); renderChart(); }
   });
 });
 
@@ -454,6 +454,138 @@ function renderVerlauf(allDays, aboDaily) {
     container.appendChild(row);
   });
 }
+
+// ── Tortendiagramm ────────────────────────────────────────────
+const PIE_COLORS = {
+  essen:       '#ff6b6b',
+  transport:   '#ffa94d',
+  einkauf:     '#ffd43b',
+  freizeit:    '#69db7c',
+  gesundheit:  '#4dabf7',
+  sonstiges:   '#9775fa',
+  streaming:   '#f783ac',
+  musik:       '#63e6be',
+  sport:       '#74c0fc',
+  software:    '#a9e34b',
+  versicherung:'#ff8787',
+};
+
+let currentChartRange = 'heute';
+
+function getChartData(range) {
+  const totals = {};
+
+  if (range === 'heute') {
+    expenses.forEach(e => {
+      totals[e.category] = (totals[e.category] || 0) + e.amount;
+    });
+  } else if (range === 'monat') {
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    getAllExpenseDays()
+      .filter(d => d.date.startsWith(thisMonth))
+      .forEach(day => day.expenses.forEach(e => {
+        totals[e.category] = (totals[e.category] || 0) + e.amount;
+      }));
+  } else if (range === 'abos') {
+    abos.forEach(a => {
+      const monthly = a.cycle === 'yearly' ? a.amount / 12 : a.amount;
+      totals[a.category] = (totals[a.category] || 0) + monthly;
+    });
+  }
+
+  return Object.entries(totals)
+    .map(([cat, amount]) => ({ cat, amount }))
+    .filter(d => d.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+}
+
+function drawPie(data) {
+  const canvas  = document.getElementById('pie-canvas');
+  const ctx     = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2, r = 88;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const total = data.reduce((s, d) => s + d.amount, 0);
+  if (total === 0) return;
+
+  let startAngle = -Math.PI / 2;
+  data.forEach(d => {
+    const slice = (d.amount / total) * 2 * Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startAngle, startAngle + slice);
+    ctx.closePath();
+    ctx.fillStyle = PIE_COLORS[d.cat] || '#9775fa';
+    ctx.fill();
+    startAngle += slice;
+  });
+
+  // Donut-Loch
+  ctx.beginPath();
+  ctx.arc(cx, cy, 48, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1a1d27';
+  ctx.fill();
+
+  // Gesamtbetrag in der Mitte
+  ctx.fillStyle = '#e8eaf0';
+  ctx.font = 'bold 15px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(formatEuro(total), cx, cy);
+}
+
+function renderChart() {
+  const data    = getChartData(currentChartRange);
+  const legend  = document.getElementById('chart-legend');
+  const emptyEl = document.getElementById('chart-empty');
+  const canvas  = document.getElementById('pie-canvas');
+  legend.innerHTML = '';
+
+  if (data.length === 0) {
+    canvas.style.opacity = '0.2';
+    emptyEl.hidden = false;
+    drawPie([]);
+    return;
+  }
+
+  canvas.style.opacity = '1';
+  emptyEl.hidden = true;
+  drawPie(data);
+
+  const total = data.reduce((s, d) => s + d.amount, 0);
+  const meta  = { ...categoryMeta, ...aboMeta };
+
+  data.forEach(d => {
+    const pct   = total > 0 ? (d.amount / total * 100).toFixed(1) : 0;
+    const color = PIE_COLORS[d.cat] || '#9775fa';
+    const label = (meta[d.cat]?.emoji || '📦') + ' ' + (meta[d.cat]?.label || d.cat);
+    const li = document.createElement('li');
+    li.className = 'chart-legend-item';
+    li.innerHTML = `
+      <span class="legend-dot" style="background:${color}"></span>
+      <div style="flex:1">
+        <div class="legend-info">
+          <span class="legend-label">${label}</span>
+          <span class="legend-amount">${formatEuro(d.amount)} · ${pct}%</span>
+        </div>
+        <div class="legend-bar-wrap">
+          <div class="legend-bar" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>
+    `;
+    legend.appendChild(li);
+  });
+}
+
+// Chart-Buttons
+document.querySelectorAll('.chart-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentChartRange = btn.dataset.range;
+    renderChart();
+  });
+});
 
 // ── View Toggle (Tagesansicht / Verlauf) ─────────────────────
 document.querySelectorAll('.view-btn').forEach(btn => {
