@@ -167,5 +167,111 @@ function escapeHtml(str) {
   }[c]));
 }
 
+// ── Tabs ──────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.tab;
+    document.getElementById('tab-ausgaben').hidden = target !== 'ausgaben';
+    document.getElementById('tab-abos').hidden     = target !== 'abos';
+  });
+});
+
+// ── Abo Storage ───────────────────────────────────────────────
+const aboMeta = {
+  streaming:   { label: 'Streaming',    emoji: '📺' },
+  musik:       { label: 'Musik',        emoji: '🎵' },
+  sport:       { label: 'Sport',        emoji: '💪' },
+  software:    { label: 'Software',     emoji: '💻' },
+  versicherung:{ label: 'Versicherung', emoji: '🛡️' },
+  sonstiges:   { label: 'Sonstiges',    emoji: '📦' },
+};
+
+function loadAbos() {
+  try { return JSON.parse(localStorage.getItem('abos')) || []; }
+  catch { return []; }
+}
+
+function saveAbos(list) {
+  localStorage.setItem('abos', JSON.stringify(list));
+}
+
+let abos = loadAbos();
+
+// ── Abo Render ────────────────────────────────────────────────
+function renderAbos() {
+  const list        = document.getElementById('abo-list');
+  const emptyEl     = document.getElementById('abo-empty-state');
+  const totalEl     = document.getElementById('total-abos');
+  const yearlyEl    = document.getElementById('yearly-abos');
+
+  [...list.querySelectorAll('.expense-item')].forEach(el => el.remove());
+
+  // Monatliche Gesamtkosten berechnen
+  const monthlyTotal = abos.reduce((sum, a) => {
+    return sum + (a.cycle === 'yearly' ? a.amount / 12 : a.amount);
+  }, 0);
+
+  totalEl.textContent  = formatEuro(monthlyTotal);
+  yearlyEl.textContent = `${formatEuro(monthlyTotal * 12)} pro Jahr`;
+
+  if (abos.length === 0) { emptyEl.style.display = 'flex'; return; }
+  emptyEl.style.display = 'none';
+
+  [...abos].reverse().forEach((abo, reversedIndex) => {
+    const realIndex = abos.length - 1 - reversedIndex;
+    const meta = aboMeta[abo.category] || aboMeta.sonstiges;
+    const cycleLabel = abo.cycle === 'yearly' ? 'Jährlich' : 'Monatlich';
+
+    const li = document.createElement('li');
+    li.className = 'expense-item';
+    li.innerHTML = `
+      <span class="expense-emoji">${meta.emoji}</span>
+      <div class="expense-info">
+        <div class="expense-desc">${escapeHtml(abo.name)}</div>
+        <div class="expense-cat">${meta.label}</div>
+      </div>
+      <span class="abo-badge">${cycleLabel}</span>
+      <span class="expense-amount">-${formatEuro(abo.amount)}</span>
+      <button class="expense-delete" data-abo-index="${realIndex}" aria-label="Löschen">✕</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+// ── Abo Save ──────────────────────────────────────────────────
+document.getElementById('abo-save-btn').addEventListener('click', () => {
+  const name      = document.getElementById('abo-name').value.trim();
+  const rawAmount = parseFloat(document.getElementById('abo-amount').value.replace(',', '.'));
+  const cycle     = document.getElementById('abo-cycle').value;
+  const category  = document.getElementById('abo-category').value;
+
+  if (!name) { shake(document.getElementById('abo-name')); return; }
+  if (isNaN(rawAmount) || rawAmount <= 0) { shake(document.getElementById('abo-amount')); return; }
+
+  abos.push({ id: Date.now(), name, amount: Math.round(rawAmount * 100) / 100, cycle, category });
+  saveAbos(abos);
+
+  document.getElementById('abo-name').value   = '';
+  document.getElementById('abo-amount').value = '';
+
+  const btn = document.getElementById('abo-save-btn');
+  btn.style.background = 'var(--green)';
+  setTimeout(() => btn.style.background = '', 700);
+
+  renderAbos();
+});
+
+// ── Abo Delete ────────────────────────────────────────────────
+document.getElementById('abo-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-abo-index]');
+  if (!btn) return;
+  abos.splice(parseInt(btn.dataset.aboIndex, 10), 1);
+  saveAbos(abos);
+  renderAbos();
+});
+
 // ── Start ─────────────────────────────────────────────────────
 init();
+renderAbos();

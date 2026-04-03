@@ -314,6 +314,47 @@ select option {
   font-size: 0.9rem;
 }
 
+/* ── Tabs ─────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 6px;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-radius: 14px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Abo Badge (monthly/yearly) ───────────────────── */
+.abo-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
 /* ── Evening Reminder Banner ──────────────────────── */
 .reminder-banner {
   position: sticky;

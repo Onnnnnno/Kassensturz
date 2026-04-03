@@ -21,72 +21,136 @@
     <!-- Header -->
     <header class="header">
       <div class="header-icon">💸</div>
-      <h1>Finanz Checker</h1>
+      <h1>Kassensturz</h1>
       <p class="header-sub">Wie viel hast du heute ausgegeben?</p>
     </header>
 
-    <!-- Tages-Zusammenfassung -->
-    <div class="summary-card">
-      <span class="summary-label">Heute ausgegeben</span>
-      <span class="summary-amount" id="total-today">0,00 €</span>
-      <span class="summary-date" id="current-date"></span>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="ausgaben">Ausgaben</button>
+      <button class="tab" data-tab="abos">Abos</button>
     </div>
 
-    <!-- Eingabe-Formular -->
-    <div class="form-card">
-      <h2 class="form-title">Ausgabe hinzufügen</h2>
+    <!-- ── TAB: AUSGABEN ── -->
+    <div id="tab-ausgaben">
 
-      <div class="input-group">
-        <label for="amount">Betrag</label>
-        <div class="amount-wrapper">
-          <span class="currency-symbol">€</span>
-          <input
-            type="number"
-            id="amount"
-            placeholder="0,00"
-            inputmode="decimal"
-            step="0.01"
-            min="0"
-          />
+      <!-- Tages-Zusammenfassung -->
+      <div class="summary-card">
+        <span class="summary-label">Heute ausgegeben</span>
+        <span class="summary-amount" id="total-today">0,00 €</span>
+        <span class="summary-date" id="current-date"></span>
+      </div>
+
+      <!-- Eingabe-Formular -->
+      <div class="form-card">
+        <h2 class="form-title">Ausgabe hinzufügen</h2>
+
+        <div class="input-group">
+          <label for="amount">Betrag</label>
+          <div class="amount-wrapper">
+            <span class="currency-symbol">€</span>
+            <input type="number" id="amount" placeholder="0,00" inputmode="decimal" step="0.01" min="0" />
+          </div>
         </div>
+
+        <div class="input-group">
+          <label for="description">Beschreibung</label>
+          <input type="text" id="description" placeholder="z.B. Mittagessen, Bahn, Kaffee…" autocomplete="off" />
+        </div>
+
+        <div class="input-group">
+          <label for="category">Kategorie</label>
+          <select id="category">
+            <option value="essen">🍔 Essen & Trinken</option>
+            <option value="transport">🚌 Transport</option>
+            <option value="einkauf">🛒 Einkauf</option>
+            <option value="freizeit">🎮 Freizeit</option>
+            <option value="gesundheit">💊 Gesundheit</option>
+            <option value="sonstiges">📦 Sonstiges</option>
+          </select>
+        </div>
+
+        <button class="btn-save" id="save-btn">
+          <span class="btn-icon">✓</span> Speichern
+        </button>
       </div>
 
-      <div class="input-group">
-        <label for="description">Beschreibung</label>
-        <input
-          type="text"
-          id="description"
-          placeholder="z.B. Mittagessen, Bahn, Kaffee…"
-          autocomplete="off"
-        />
+      <!-- Ausgaben-Liste -->
+      <div class="list-card">
+        <h2 class="list-title">Heutige Ausgaben</h2>
+        <ul class="expense-list" id="expense-list">
+          <li class="empty-state" id="empty-state">
+            <span class="empty-icon">📋</span>
+            <p>Noch keine Ausgaben heute.</p>
+          </li>
+        </ul>
       </div>
 
-      <div class="input-group">
-        <label for="category">Kategorie</label>
-        <select id="category">
-          <option value="essen">🍔 Essen & Trinken</option>
-          <option value="transport">🚌 Transport</option>
-          <option value="einkauf">🛒 Einkauf</option>
-          <option value="freizeit">🎮 Freizeit</option>
-          <option value="gesundheit">💊 Gesundheit</option>
-          <option value="sonstiges">📦 Sonstiges</option>
-        </select>
-      </div>
-
-      <button class="btn-save" id="save-btn">
-        <span class="btn-icon">✓</span> Speichern
-      </button>
     </div>
 
-    <!-- Ausgaben-Liste -->
-    <div class="list-card">
-      <h2 class="list-title">Heutige Ausgaben</h2>
-      <ul class="expense-list" id="expense-list">
-        <li class="empty-state" id="empty-state">
-          <span class="empty-icon">📋</span>
-          <p>Noch keine Ausgaben heute.</p>
-        </li>
-      </ul>
+    <!-- ── TAB: ABOS ── -->
+    <div id="tab-abos" hidden>
+
+      <!-- Abo-Zusammenfassung -->
+      <div class="summary-card">
+        <span class="summary-label">Monatliche Abos</span>
+        <span class="summary-amount" id="total-abos">0,00 €</span>
+        <span class="summary-date" id="yearly-abos"></span>
+      </div>
+
+      <!-- Abo-Formular -->
+      <div class="form-card">
+        <h2 class="form-title">Abo hinzufügen</h2>
+
+        <div class="input-group">
+          <label for="abo-name">Name</label>
+          <input type="text" id="abo-name" placeholder="z.B. Netflix, Spotify, Gym…" autocomplete="off" />
+        </div>
+
+        <div class="input-group">
+          <label for="abo-amount">Betrag</label>
+          <div class="amount-wrapper">
+            <span class="currency-symbol">€</span>
+            <input type="number" id="abo-amount" placeholder="0,00" inputmode="decimal" step="0.01" min="0" />
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="abo-cycle">Abrechnungszeitraum</label>
+          <select id="abo-cycle">
+            <option value="monthly">📅 Monatlich</option>
+            <option value="yearly">📆 Jährlich</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="abo-category">Kategorie</label>
+          <select id="abo-category">
+            <option value="streaming">📺 Streaming</option>
+            <option value="musik">🎵 Musik</option>
+            <option value="sport">💪 Sport</option>
+            <option value="software">💻 Software</option>
+            <option value="versicherung">🛡️ Versicherung</option>
+            <option value="sonstiges">📦 Sonstiges</option>
+          </select>
+        </div>
+
+        <button class="btn-save" id="abo-save-btn">
+          <span class="btn-icon">✓</span> Abo speichern
+        </button>
+      </div>
+
+      <!-- Abo-Liste -->
+      <div class="list-card">
+        <h2 class="list-title">Meine Abos</h2>
+        <ul class="expense-list" id="abo-list">
+          <li class="empty-state" id="abo-empty-state">
+            <span class="empty-icon">📋</span>
+            <p>Noch keine Abos eingetragen.</p>
+          </li>
+        </ul>
+      </div>
+
     </div>
 
   </div>
