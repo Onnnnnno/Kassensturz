@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finanz Checker</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+<body>
+
+  <!-- Evening Reminder Banner -->
+  <div id="reminder-banner" class="reminder-banner" hidden>
+    <span class="reminder-icon">🔔</span>
+    <span>Vergiss deinen Kassensturz nicht!</span>
+  </div>
+
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">💸</div>
+      <h1>Finanz Checker</h1>
+      <p class="header-sub">Wie viel hast du heute ausgegeben?</p>
+    </header>
+
+    <!-- Tages-Zusammenfassung -->
+    <div class="summary-card">
+      <span class="summary-label">Heute ausgegeben</span>
+      <span class="summary-amount" id="total-today">0,00 €</span>
+      <span class="summary-date" id="current-date"></span>
+    </div>
+
+    <!-- Eingabe-Formular -->
+    <div class="form-card">
+      <h2 class="form-title">Ausgabe hinzufügen</h2>
+
+      <div class="input-group">
+        <label for="amount">Betrag</label>
+        <div class="amount-wrapper">
+          <span class="currency-symbol">€</span>
+          <input
+            type="number"
+            id="amount"
+            placeholder="0,00"
+            inputmode="decimal"
+            step="0.01"
+            min="0"
+          />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="description">Beschreibung</label>
+        <input
+          type="text"
+          id="description"
+          placeholder="z.B. Mittagessen, Bahn, Kaffee…"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="category">Kategorie</label>
+        <select id="category">
+          <option value="essen">🍔 Essen & Trinken</option>
+          <option value="transport">🚌 Transport</option>
+          <option value="einkauf">🛒 Einkauf</option>
+          <option value="freizeit">🎮 Freizeit</option>
+          <option value="gesundheit">💊 Gesundheit</option>
+          <option value="sonstiges">📦 Sonstiges</option>
+        </select>
+      </div>
+
+      <button class="btn-save" id="save-btn">
+        <span class="btn-icon">✓</span> Speichern
+      </button>
+    </div>
+
+    <!-- Ausgaben-Liste -->
+    <div class="list-card">
+      <h2 class="list-title">Heutige Ausgaben</h2>
+      <ul class="expense-list" id="expense-list">
+        <li class="empty-state" id="empty-state">
+          <span class="empty-icon">📋</span>
+          <p>Noch keine Ausgaben heute.</p>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
