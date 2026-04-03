@@ -173,8 +173,10 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     const target = tab.dataset.tab;
-    document.getElementById('tab-ausgaben').hidden = target !== 'ausgaben';
-    document.getElementById('tab-abos').hidden     = target !== 'abos';
+    document.getElementById('tab-ausgaben').hidden   = target !== 'ausgaben';
+    document.getElementById('tab-abos').hidden       = target !== 'abos';
+    document.getElementById('tab-uebersicht').hidden = target !== 'uebersicht';
+    if (target === 'uebersicht') renderUebersicht();
   });
 });
 
@@ -270,6 +272,197 @@ document.getElementById('abo-list').addEventListener('click', (e) => {
   abos.splice(parseInt(btn.dataset.aboIndex, 10), 1);
   saveAbos(abos);
   renderAbos();
+});
+
+// ── Übersicht ─────────────────────────────────────────────────
+
+// Alle Tage mit Ausgaben aus localStorage sammeln
+function getAllExpenseDays() {
+  const days = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('expenses_')) {
+      const dateStr = key.replace('expenses_', '');
+      try {
+        const list = JSON.parse(localStorage.getItem(key)) || [];
+        const total = list.reduce((s, e) => s + e.amount, 0);
+        days.push({ date: dateStr, expenses: list, total });
+      } catch { /* skip */ }
+    }
+  }
+  return days.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function monthlyAboTotal() {
+  return abos.reduce((sum, a) => sum + (a.cycle === 'yearly' ? a.amount / 12 : a.amount), 0);
+}
+
+// Tages-Abo-Anteil = monatliche Kosten / 30
+function dailyAboShare() {
+  return monthlyAboTotal() / 30;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+// ── Übersicht rendern ─────────────────────────────────────────
+function renderUebersicht() {
+  const aboMonthly  = monthlyAboTotal();
+  const aboDaily    = dailyAboShare();
+  const todayExp    = expenses.reduce((s, e) => s + e.amount, 0);
+  const todayTotal  = todayExp + aboDaily;
+  const allDays     = getAllExpenseDays();
+
+  // Monatsausgaben (alle Tage dieses Monats)
+  const thisMonth = new Date().toISOString().slice(0, 7);
+  const monthExpenses = allDays
+    .filter(d => d.date.startsWith(thisMonth))
+    .reduce((s, d) => s + d.total, 0);
+  const monthTotal = monthExpenses + aboMonthly;
+
+  // Karten oben befüllen
+  document.getElementById('ueb-total-today').textContent = formatEuro(todayTotal);
+  document.getElementById('ueb-split-today').textContent =
+    `${formatEuro(todayExp)} Ausgaben + ${formatEuro(aboDaily)} Abos`;
+
+  document.getElementById('ueb-month-total').textContent = formatEuro(monthTotal);
+  document.getElementById('ueb-month-sub').textContent   =
+    `${formatEuro(monthExpenses)} + ${formatEuro(aboMonthly)} Abos`;
+
+  document.getElementById('ueb-abo-monthly').textContent = formatEuro(aboMonthly);
+  document.getElementById('ueb-abo-daily').textContent   = `${formatEuro(aboDaily)} pro Tag`;
+
+  renderTagView();
+  renderVerlauf(allDays, aboDaily);
+}
+
+// ── Tagesansicht ──────────────────────────────────────────────
+let currentDayOffset = 0; // 0 = heute, -1 = gestern, ...
+
+function getDateByOffset(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().slice(0, 10);
+}
+
+function renderTagView() {
+  const dateStr    = getDateByOffset(currentDayOffset);
+  const aboDaily   = dailyAboShare();
+  const dayList    = JSON.parse(localStorage.getItem('expenses_' + dateStr) || '[]');
+  const expTotal   = dayList.reduce((s, e) => s + e.amount, 0);
+  const grandTotal = expTotal + aboDaily;
+
+  const label = currentDayOffset === 0 ? 'Heute' :
+                currentDayOffset === -1 ? 'Gestern' :
+                formatDate(dateStr);
+  document.getElementById('day-label').textContent = label;
+  document.getElementById('day-next').disabled = currentDayOffset >= 0;
+
+  const list     = document.getElementById('tag-list');
+  const emptyEl  = document.getElementById('tag-empty');
+  const totalRow = document.getElementById('day-total-row');
+
+  [...list.querySelectorAll('.expense-item')].forEach(el => el.remove());
+
+  if (dayList.length === 0) {
+    emptyEl.style.display = 'flex';
+    totalRow.hidden = true;
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  totalRow.hidden = false;
+
+  [...dayList].reverse().forEach(expense => {
+    const meta = categoryMeta[expense.category] || categoryMeta.sonstiges;
+    const li = document.createElement('li');
+    li.className = 'expense-item';
+    li.innerHTML = `
+      <span class="expense-emoji">${meta.emoji}</span>
+      <div class="expense-info">
+        <div class="expense-desc">${escapeHtml(expense.description || 'Keine Beschreibung')}</div>
+        <div class="expense-cat">${meta.label}</div>
+      </div>
+      <span class="expense-amount">-${formatEuro(expense.amount)}</span>
+    `;
+    list.appendChild(li);
+  });
+
+  // Abo-Anteil als eigene Zeile
+  const aboLi = document.createElement('li');
+  aboLi.className = 'expense-item';
+  aboLi.innerHTML = `
+    <span class="expense-emoji">📅</span>
+    <div class="expense-info">
+      <div class="expense-desc">Abo-Anteil</div>
+      <div class="expense-cat">Täglicher Durchschnitt</div>
+    </div>
+    <span class="expense-amount">-${formatEuro(aboDaily)}</span>
+  `;
+  list.appendChild(aboLi);
+
+  document.getElementById('day-expenses-sum').textContent = formatEuro(expTotal);
+  document.getElementById('day-abo-share').textContent    = formatEuro(aboDaily);
+  document.getElementById('day-grand-total').textContent  = formatEuro(grandTotal);
+}
+
+document.getElementById('day-prev').addEventListener('click', () => {
+  currentDayOffset--;
+  renderTagView();
+});
+document.getElementById('day-next').addEventListener('click', () => {
+  if (currentDayOffset < 0) { currentDayOffset++; renderTagView(); }
+});
+
+// ── Verlauf ───────────────────────────────────────────────────
+function renderVerlauf(allDays, aboDaily) {
+  const container = document.getElementById('verlauf-list');
+  const emptyEl   = document.getElementById('verlauf-empty');
+  [...container.querySelectorAll('.verlauf-row')].forEach(el => el.remove());
+
+  if (allDays.length === 0) {
+    emptyEl.style.display = 'flex';
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  let cumulative = 0;
+  // Älteste zuerst → Aufbau sichtbar
+  allDays.forEach(day => {
+    const dayTotal = day.total + aboDaily;
+    cumulative += dayTotal;
+
+    const row = document.createElement('div');
+    row.className = 'verlauf-row';
+    const d = new Date(day.date + 'T00:00:00');
+    row.innerHTML = `
+      <div class="verlauf-date">
+        <div class="verlauf-date-main">${d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })}</div>
+        <div class="verlauf-date-sub">${d.toLocaleDateString('de-DE', { weekday: 'short' })}</div>
+      </div>
+      <div class="verlauf-amounts">
+        <div class="verlauf-day-cost">-${formatEuro(dayTotal)}</div>
+        <div class="verlauf-day-sub">${formatEuro(day.total)} + ${formatEuro(aboDaily)} Abos</div>
+      </div>
+      <div class="verlauf-cumulative">
+        <div class="verlauf-cum-amount">${formatEuro(cumulative)}</div>
+        <div class="verlauf-cum-label">kumuliert</div>
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// ── View Toggle (Tagesansicht / Verlauf) ─────────────────────
+document.querySelectorAll('.view-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-tag').hidden     = btn.dataset.view !== 'tag';
+    document.getElementById('view-verlauf').hidden = btn.dataset.view !== 'verlauf';
+  });
 });
 
 // ── Start ─────────────────────────────────────────────────────

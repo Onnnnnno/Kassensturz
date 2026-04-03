@@ -29,6 +29,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="ausgaben">Ausgaben</button>
       <button class="tab" data-tab="abos">Abos</button>
+      <button class="tab" data-tab="uebersicht">Übersicht</button>
     </div>
 
     <!-- ── TAB: AUSGABEN ── -->
@@ -149,6 +150,79 @@
             <p>Noch keine Abos eingetragen.</p>
           </li>
         </ul>
+      </div>
+
+    </div>
+
+    <!-- ── TAB: ÜBERSICHT ── -->
+    <div id="tab-uebersicht" hidden>
+
+      <!-- Gesamtkosten heute -->
+      <div class="summary-card">
+        <span class="summary-label">Gesamt heute (inkl. Abos)</span>
+        <span class="summary-amount" id="ueb-total-today">0,00 €</span>
+        <div class="summary-split" id="ueb-split-today"></div>
+      </div>
+
+      <!-- Zwei Mini-Karten nebeneinander -->
+      <div class="mini-cards">
+        <div class="mini-card">
+          <span class="mini-label">Monat gesamt</span>
+          <span class="mini-amount" id="ueb-month-total">0,00 €</span>
+          <span class="mini-sub" id="ueb-month-sub"></span>
+        </div>
+        <div class="mini-card">
+          <span class="mini-label">Abos / Monat</span>
+          <span class="mini-amount" id="ueb-abo-monthly">0,00 €</span>
+          <span class="mini-sub" id="ueb-abo-daily"></span>
+        </div>
+      </div>
+
+      <!-- Ansicht-Toggle -->
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="tag">Tagesansicht</button>
+        <button class="view-btn" data-view="verlauf">Verlauf</button>
+      </div>
+
+      <!-- Tagesansicht -->
+      <div id="view-tag">
+        <div class="day-nav">
+          <button class="day-nav-btn" id="day-prev">‹</button>
+          <span class="day-nav-label" id="day-label"></span>
+          <button class="day-nav-btn" id="day-next">›</button>
+        </div>
+        <div class="list-card">
+          <ul class="expense-list" id="tag-list">
+            <li class="empty-state" id="tag-empty">
+              <span class="empty-icon">📋</span>
+              <p>Keine Ausgaben an diesem Tag.</p>
+            </li>
+          </ul>
+          <div class="day-total-row" id="day-total-row" hidden>
+            <div class="day-total-line">
+              <span>Ausgaben</span><span id="day-expenses-sum">0,00 €</span>
+            </div>
+            <div class="day-total-line">
+              <span>Abo-Anteil (tägl.)</span><span id="day-abo-share">0,00 €</span>
+            </div>
+            <div class="day-total-line day-total-line--total">
+              <span>Gesamt</span><span id="day-grand-total">0,00 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Verlauf -->
+      <div id="view-verlauf" hidden>
+        <div class="list-card">
+          <h2 class="list-title">Kumulierter Verlauf</h2>
+          <div id="verlauf-list">
+            <div class="empty-state" id="verlauf-empty">
+              <span class="empty-icon">📈</span>
+              <p>Noch keine Daten vorhanden.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

@@ -355,6 +355,198 @@ select option {
   flex-shrink: 0;
 }
 
+/* ── Summary Split (heute: X Ausgaben + Y Abos) ──── */
+.summary-split {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* ── Mini Cards (2 nebeneinander) ─────────────────── */
+.mini-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mini-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.mini-amount {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.mini-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* ── View Toggle (Tagesansicht / Verlauf) ─────────── */
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 5px;
+}
+
+.view-btn {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.view-btn.active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ── Day Navigation ───────────────────────────────── */
+.day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 16px;
+}
+
+.day-nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.day-nav-btn:hover { color: var(--text); background: var(--surface-2); }
+.day-nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+.day-nav-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Day Total Summary ────────────────────────────── */
+.day-total-row {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.day-total-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.day-total-line--total {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Verlauf Rows ─────────────────────────────────── */
+.verlauf-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  animation: slideIn 0.2s ease;
+}
+
+.verlauf-row:last-child { border-bottom: none; }
+
+.verlauf-date {
+  min-width: 70px;
+}
+
+.verlauf-date-main {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.verlauf-date-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.verlauf-amounts {
+  flex: 1;
+}
+
+.verlauf-day-cost {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.verlauf-day-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.verlauf-cumulative {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.verlauf-cum-amount {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.verlauf-cum-label {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
 /* ── Evening Reminder Banner ──────────────────────── */
 .reminder-banner {
   position: sticky;
