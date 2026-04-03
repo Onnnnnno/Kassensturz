@@ -178,6 +178,41 @@
         </div>
       </div>
 
+      <!-- Monatsbudget -->
+      <div class="budget-card" id="budget-card">
+        <div class="budget-header">
+          <div>
+            <h2 class="list-title" style="margin-bottom:2px">Monatsbudget</h2>
+            <span class="budget-status" id="budget-status"></span>
+          </div>
+          <button class="budget-edit-btn" id="budget-edit-btn">✎ Ändern</button>
+        </div>
+
+        <!-- Anzeige-Modus -->
+        <div id="budget-display">
+          <div class="budget-numbers">
+            <span id="budget-spent">0,00 €</span>
+            <span id="budget-of">von</span>
+            <span id="budget-limit">— €</span>
+          </div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" id="budget-bar"></div>
+          </div>
+          <div class="budget-remaining" id="budget-remaining"></div>
+        </div>
+
+        <!-- Eingabe-Modus -->
+        <div id="budget-form" hidden>
+          <div class="amount-wrapper" style="margin-bottom:12px">
+            <span class="currency-symbol">€</span>
+            <input type="number" id="budget-input" placeholder="z.B. 1500" inputmode="decimal" step="1" min="0" />
+          </div>
+          <button class="btn-save" id="budget-save-btn" style="margin-top:0">
+            <span class="btn-icon">✓</span> Budget speichern
+          </button>
+        </div>
+      </div>
+
       <!-- Tortendiagramm -->
       <div class="chart-card" id="chart-card">
         <h2 class="list-title">Ausgaben nach Kategorie</h2>

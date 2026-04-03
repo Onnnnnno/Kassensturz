@@ -547,6 +547,95 @@ select option {
   color: var(--text-muted);
 }
 
+/* ── Monatsbudget ─────────────────────────────────── */
+.budget-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.budget-status {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.budget-status.ok      { color: var(--green); }
+.budget-status.warn    { color: #ffa94d; }
+.budget-status.over    { color: var(--danger); }
+.budget-status.not-set { color: var(--text-muted); }
+
+.budget-edit-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+.budget-edit-btn:hover { color: var(--text); }
+
+.budget-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.budget-numbers #budget-spent {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.budget-numbers #budget-of {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.budget-numbers #budget-limit {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.budget-bar-wrap {
+  height: 10px;
+  background: var(--surface-2);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.budget-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.5s ease, background 0.3s;
+  background: var(--green);
+}
+
+.budget-bar.warn { background: #ffa94d; }
+.budget-bar.over { background: var(--danger); }
+
+.budget-remaining {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
 /* ── Tortendiagramm ───────────────────────────────── */
 .chart-card {
   background: var(--surface);

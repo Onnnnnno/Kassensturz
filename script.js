@@ -274,6 +274,80 @@ document.getElementById('abo-list').addEventListener('click', (e) => {
   renderAbos();
 });
 
+// ── Budget ────────────────────────────────────────────────────
+function loadBudget() {
+  return parseFloat(localStorage.getItem('monthly_budget')) || 0;
+}
+
+function renderBudget(monthTotal) {
+  const budget     = loadBudget();
+  const statusEl   = document.getElementById('budget-status');
+  const barEl      = document.getElementById('budget-bar');
+  const spentEl    = document.getElementById('budget-spent');
+  const limitEl    = document.getElementById('budget-limit');
+  const remainEl   = document.getElementById('budget-remaining');
+  const displayEl  = document.getElementById('budget-display');
+
+  spentEl.textContent = formatEuro(monthTotal);
+
+  if (budget <= 0) {
+    limitEl.textContent = '— €';
+    barEl.style.width   = '0%';
+    barEl.className     = 'budget-bar';
+    remainEl.textContent = '';
+    statusEl.textContent = 'Kein Budget gesetzt';
+    statusEl.className   = 'budget-status not-set';
+    displayEl.hidden     = false;
+    return;
+  }
+
+  const pct  = Math.min((monthTotal / budget) * 100, 100);
+  const rest = budget - monthTotal;
+
+  limitEl.textContent = formatEuro(budget);
+  barEl.style.width   = pct + '%';
+
+  if (pct >= 100) {
+    barEl.className      = 'budget-bar over';
+    statusEl.textContent = '⚠️ Budget überschritten!';
+    statusEl.className   = 'budget-status over';
+    remainEl.textContent = `${formatEuro(Math.abs(rest))} über Budget`;
+  } else if (pct >= 80) {
+    barEl.className      = 'budget-bar warn';
+    statusEl.textContent = `Noch ${formatEuro(rest)} übrig`;
+    statusEl.className   = 'budget-status warn';
+    remainEl.textContent = `${pct.toFixed(0)}% verbraucht`;
+  } else {
+    barEl.className      = 'budget-bar';
+    statusEl.textContent = `Noch ${formatEuro(rest)} übrig`;
+    statusEl.className   = 'budget-status ok';
+    remainEl.textContent = `${pct.toFixed(0)}% verbraucht`;
+  }
+
+  displayEl.hidden = false;
+}
+
+// Budget bearbeiten
+document.getElementById('budget-edit-btn').addEventListener('click', () => {
+  const formEl    = document.getElementById('budget-form');
+  const displayEl = document.getElementById('budget-display');
+  const input     = document.getElementById('budget-input');
+  const current   = loadBudget();
+  if (current > 0) input.value = current;
+  formEl.hidden    = false;
+  displayEl.hidden = true;
+  input.focus();
+});
+
+document.getElementById('budget-save-btn').addEventListener('click', () => {
+  const raw = parseFloat(document.getElementById('budget-input').value.replace(',', '.'));
+  if (isNaN(raw) || raw <= 0) { shake(document.getElementById('budget-input')); return; }
+  localStorage.setItem('monthly_budget', raw);
+  document.getElementById('budget-form').hidden    = true;
+  document.getElementById('budget-input').value    = '';
+  renderUebersicht();
+});
+
 // ── Übersicht ─────────────────────────────────────────────────
 
 // Alle Tage mit Ausgaben aus localStorage sammeln
@@ -334,6 +408,7 @@ function renderUebersicht() {
   document.getElementById('ueb-abo-monthly').textContent = formatEuro(aboMonthly);
   document.getElementById('ueb-abo-daily').textContent   = `${formatEuro(aboDaily)} pro Tag`;
 
+  renderBudget(monthTotal);
   renderTagView();
   renderVerlauf(allDays, aboDaily);
 }
