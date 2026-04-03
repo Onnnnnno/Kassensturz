@@ -550,35 +550,77 @@ const PIE_COLORS = {
   sport:       '#74c0fc',
   software:    '#a9e34b',
   versicherung:'#ff8787',
+  __abos__:    '#ffd43b',
 };
 
 let currentChartRange = 'heute';
 
 function getChartData(range) {
-  const totals = {};
+  const totals   = {};
+  const aboDaily = dailyAboShare();
+  const aboMonth = monthlyAboTotal();
 
-  if (range === 'heute') {
-    expenses.forEach(e => {
+  // Hilfsfunktion: Ausgaben einer Tagesliste addieren
+  function addExpenses(list) {
+    list.forEach(e => {
       totals[e.category] = (totals[e.category] || 0) + e.amount;
-    });
-  } else if (range === 'monat') {
-    const thisMonth = new Date().toISOString().slice(0, 7);
-    getAllExpenseDays()
-      .filter(d => d.date.startsWith(thisMonth))
-      .forEach(day => day.expenses.forEach(e => {
-        totals[e.category] = (totals[e.category] || 0) + e.amount;
-      }));
-  } else if (range === 'abos') {
-    abos.forEach(a => {
-      const monthly = a.cycle === 'yearly' ? a.amount / 12 : a.amount;
-      totals[a.category] = (totals[a.category] || 0) + monthly;
     });
   }
 
-  return Object.entries(totals)
-    .map(([cat, amount]) => ({ cat, amount }))
+  // Hilfsfunktion: Abo-Anteil als eigenen Slice hinzufügen
+  function addAboSlice(amount) {
+    if (amount > 0) totals['__abos__'] = (totals['__abos__'] || 0) + amount;
+  }
+
+  if (range === 'heute') {
+    addExpenses(expenses);
+    addAboSlice(aboDaily);
+
+  } else if (range === 'woche') {
+    const allDays = getAllExpenseDays();
+    // Letzte 7 Tage
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      const day = allDays.find(x => x.date === key);
+      if (day) addExpenses(day.expenses);
+    }
+    addAboSlice(aboDaily * 7);
+
+  } else if (range === 'monat') {
+    const thisMonth = todayKey().slice(0, 7);
+    getAllExpenseDays()
+      .filter(d => d.date.startsWith(thisMonth))
+      .forEach(day => addExpenses(day.expenses));
+    addAboSlice(aboMonth);
+
+  } else if (range === 'gesamt') {
+    getAllExpenseDays().forEach(day => addExpenses(day.expenses));
+    // Abos: so viele Monate wie es Daten gibt
+    const allDays = getAllExpenseDays();
+    if (allDays.length > 0) {
+      const firstDate = new Date(allDays[0].date + 'T00:00:00');
+      const today     = new Date();
+      const months    = Math.max(1,
+        (today.getFullYear() - firstDate.getFullYear()) * 12 +
+        (today.getMonth() - firstDate.getMonth()) + 1
+      );
+      addAboSlice(aboMonth * months);
+    }
+  }
+
+  // __abos__ bekommt einen lesbaren Namen
+  const result = Object.entries(totals)
+    .map(([cat, amount]) => ({
+      cat,
+      label: cat === '__abos__' ? '📅 Abos' : null,
+      amount,
+    }))
     .filter(d => d.amount > 0)
     .sort((a, b) => b.amount - a.amount);
+
+  return result;
 }
 
 function drawPie(data) {
@@ -639,8 +681,10 @@ function renderChart() {
 
   data.forEach(d => {
     const pct   = total > 0 ? (d.amount / total * 100).toFixed(1) : 0;
-    const color = PIE_COLORS[d.cat] || '#9775fa';
-    const label = (meta[d.cat]?.emoji || '📦') + ' ' + (meta[d.cat]?.label || d.cat);
+    const color = d.cat === '__abos__' ? '#ffd43b' : (PIE_COLORS[d.cat] || '#9775fa');
+    const label = d.cat === '__abos__'
+      ? '📅 Abos'
+      : (meta[d.cat]?.emoji || '📦') + ' ' + (meta[d.cat]?.label || d.cat);
     const li = document.createElement('li');
     li.className = 'chart-legend-item';
     li.innerHTML = `
