@@ -787,6 +787,55 @@ select option {
   padding: 16px 0;
 }
 
+/* ── Excel Export ─────────────────────────────────── */
+.export-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.export-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.export-icon { font-size: 1.8rem; }
+
+.export-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.export-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.btn-export {
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.btn-export:active { opacity: 0.8; }
+
 /* ── Evening Reminder Banner ──────────────────────── */
 .reminder-banner {
   position: sticky;

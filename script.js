@@ -672,6 +672,65 @@ document.querySelectorAll('.view-btn').forEach(btn => {
   });
 });
 
+// ── Excel Export ──────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', () => {
+  const wb = XLSX.utils.book_new();
+
+  // ── Blatt 1: Alle Ausgaben ──
+  const allDays = getAllExpenseDays();
+  const expRows = [['Datum', 'Beschreibung', 'Kategorie', 'Betrag (€)']];
+  allDays.forEach(day => {
+    day.expenses.forEach(e => {
+      const meta = categoryMeta[e.category] || categoryMeta.sonstiges;
+      expRows.push([
+        day.date,
+        e.description || 'Keine Beschreibung',
+        meta.label,
+        e.amount,
+      ]);
+    });
+  });
+  const wsAusgaben = XLSX.utils.aoa_to_sheet(expRows);
+  wsAusgaben['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 18 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, wsAusgaben, 'Ausgaben');
+
+  // ── Blatt 2: Abos ──
+  const aboRows = [['Name', 'Kategorie', 'Betrag (€)', 'Zeitraum', 'Monatlich (€)']];
+  abos.forEach(a => {
+    const meta    = aboMeta[a.category] || aboMeta.sonstiges;
+    const monthly = a.cycle === 'yearly' ? (a.amount / 12).toFixed(2) : a.amount;
+    aboRows.push([
+      a.name,
+      meta.label,
+      a.amount,
+      a.cycle === 'yearly' ? 'Jährlich' : 'Monatlich',
+      parseFloat(monthly),
+    ]);
+  });
+  const wsAbos = XLSX.utils.aoa_to_sheet(aboRows);
+  wsAbos['!cols'] = [{ wch: 20 }, { wch: 16 }, { wch: 12 }, { wch: 12 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, wsAbos, 'Abos');
+
+  // ── Blatt 3: Monatszusammenfassung ──
+  const months = {};
+  allDays.forEach(day => {
+    const m = day.date.slice(0, 7);
+    months[m] = (months[m] || 0) + day.total;
+  });
+  const aboMonthly = monthlyAboTotal();
+  const sumRows = [['Monat', 'Ausgaben (€)', 'Abos (€)', 'Gesamt (€)']];
+  Object.entries(months).sort().forEach(([m, total]) => {
+    sumRows.push([m, total, aboMonthly, total + aboMonthly]);
+  });
+  const wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+  wsSummary['!cols'] = [{ wch: 10 }, { wch: 14 }, { wch: 12 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Monatsübersicht');
+
+  // Download
+  const date = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `Kassensturz_${date}.xlsx`);
+});
+
 // ── Push Notifications ────────────────────────────────────────
 let swRegistration = null;
 
