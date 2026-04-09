@@ -685,6 +685,19 @@ select option {
   text-align: right;
 }
 
+.budget-daily {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text);
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 /* ── Tortendiagramm ───────────────────────────────── */
 .chart-card {
   background: var(--surface);

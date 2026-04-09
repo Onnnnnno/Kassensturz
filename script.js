@@ -293,17 +293,19 @@ function renderBudget(monthTotal) {
   const spentEl    = document.getElementById('budget-spent');
   const limitEl    = document.getElementById('budget-limit');
   const remainEl   = document.getElementById('budget-remaining');
+  const dailyEl    = document.getElementById('budget-daily');
   const displayEl  = document.getElementById('budget-display');
 
   spentEl.textContent = formatEuro(monthTotal);
 
   if (budget <= 0) {
-    limitEl.textContent = '— €';
-    barEl.style.width   = '0%';
-    barEl.className     = 'budget-bar';
+    limitEl.textContent  = '— €';
+    barEl.style.width    = '0%';
+    barEl.className      = 'budget-bar';
     remainEl.textContent = '';
     statusEl.textContent = 'Kein Budget gesetzt';
     statusEl.className   = 'budget-status not-set';
+    dailyEl.hidden       = true;
     displayEl.hidden     = false;
     return;
   }
@@ -329,6 +331,18 @@ function renderBudget(monthTotal) {
     statusEl.textContent = `Noch ${formatEuro(rest)} übrig`;
     statusEl.className   = 'budget-status ok';
     remainEl.textContent = `${pct.toFixed(0)}% verbraucht`;
+  }
+
+  // Tägliches Budget berechnen
+  const now      = new Date();
+  const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = lastDay - now.getDate() + 1; // inkl. heute
+  if (rest > 0 && daysLeft > 0) {
+    const perDay = rest / daysLeft;
+    dailyEl.textContent = `${formatEuro(perDay)} pro Tag · noch ${daysLeft} Tag${daysLeft !== 1 ? 'e' : ''}`;
+    dailyEl.hidden = false;
+  } else {
+    dailyEl.hidden = true;
   }
 
   displayEl.hidden = false;
