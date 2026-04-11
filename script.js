@@ -183,6 +183,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.getElementById('tab-ausgaben').hidden   = target !== 'ausgaben';
     document.getElementById('tab-abos').hidden       = target !== 'abos';
     document.getElementById('tab-uebersicht').hidden = target !== 'uebersicht';
+    document.getElementById('tab-gruppe').hidden     = target !== 'gruppe';
     if (target === 'uebersicht') { renderUebersicht(); renderChart(); }
   });
 });

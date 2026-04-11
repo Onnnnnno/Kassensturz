@@ -42,6 +42,7 @@
       <button class="tab active" data-tab="ausgaben">Ausgaben</button>
       <button class="tab" data-tab="abos">Abos</button>
       <button class="tab" data-tab="uebersicht">Übersicht</button>
+      <button class="tab" data-tab="gruppe">Gruppe</button>
     </div>
 
     <!-- ── TAB: AUSGABEN ── -->
@@ -303,9 +304,149 @@
 
     </div>
 
-  </div>
+    <!-- ── TAB: GRUPPE ── -->
+    <div id="tab-gruppe" hidden>
 
+      <!-- Nicht eingeloggt -->
+      <div id="gruppe-auth">
+        <div class="form-card">
+          <h2 class="form-title">Anmelden / Registrieren</h2>
+          <p class="gruppe-hint">Erstelle einen Account um gemeinsame Ausgaben mit anderen zu teilen.</p>
+
+          <div id="gruppe-error" class="gruppe-msg gruppe-msg--error" hidden></div>
+          <div id="gruppe-success" class="gruppe-msg gruppe-msg--success" hidden></div>
+
+          <div class="input-group">
+            <label for="gruppe-email">E-Mail</label>
+            <input type="email" id="gruppe-email" placeholder="name@beispiel.de" autocomplete="email" />
+          </div>
+          <div class="input-group">
+            <label for="gruppe-pw">Passwort</label>
+            <input type="password" id="gruppe-pw" placeholder="Mindestens 6 Zeichen" autocomplete="current-password" />
+          </div>
+          <div class="gruppe-auth-btns">
+            <button class="btn-save" id="gruppe-login-btn">Anmelden</button>
+            <button class="btn-secondary" id="gruppe-register-btn">Registrieren</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eingeloggt -->
+      <div id="gruppe-main" hidden>
+
+        <div class="gruppe-user-bar">
+          <span id="gruppe-user-email" class="gruppe-user-email"></span>
+          <button class="btn-ghost" id="gruppe-logout-btn">Abmelden</button>
+        </div>
+
+        <!-- Keine Gruppe -->
+        <div id="gruppe-no-group">
+          <div class="form-card">
+            <h2 class="form-title">Gruppe erstellen</h2>
+            <div class="input-group">
+              <label for="gruppe-name-input">Gruppenname</label>
+              <input type="text" id="gruppe-name-input" placeholder="z.B. WG Kasse, Urlaub 2025…" />
+            </div>
+            <button class="btn-save" id="gruppe-create-btn"><span class="btn-icon">✓</span> Erstellen</button>
+          </div>
+
+          <div class="form-card">
+            <h2 class="form-title">Gruppe beitreten</h2>
+            <div class="input-group">
+              <label for="gruppe-code-input">Einladungscode</label>
+              <input type="text" id="gruppe-code-input" placeholder="6-stelliger Code" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:1.1rem" />
+            </div>
+            <button class="btn-save" id="gruppe-join-btn"><span class="btn-icon">→</span> Beitreten</button>
+          </div>
+        </div>
+
+        <!-- Gruppe aktiv -->
+        <div id="gruppe-group" hidden>
+
+          <!-- Gruppen-Info -->
+          <div class="summary-card">
+            <span class="summary-label">Gruppe</span>
+            <span class="summary-amount" id="gruppe-total">0,00 €</span>
+            <span class="summary-date" id="gruppe-title"></span>
+          </div>
+
+          <!-- Split Mini-Karten -->
+          <div class="mini-cards">
+            <div class="mini-card">
+              <span class="mini-label">Von dir</span>
+              <span class="mini-amount" id="gruppe-my-total">0,00 €</span>
+            </div>
+            <div class="mini-card">
+              <span class="mini-label">Von anderen</span>
+              <span class="mini-amount" id="gruppe-other-total">0,00 €</span>
+            </div>
+          </div>
+
+          <!-- Einladungscode -->
+          <div class="list-card gruppe-code-card">
+            <div class="gruppe-code-row">
+              <div>
+                <div class="gruppe-code-label">Einladungscode</div>
+                <div class="gruppe-code" id="gruppe-invite-code">——</div>
+              </div>
+              <button class="btn-ghost" id="gruppe-leave-btn">Verlassen</button>
+            </div>
+            <div class="gruppe-code-hint">Teile diesen Code mit anderen</div>
+            <ul class="gruppe-members" id="gruppe-members-list"></ul>
+          </div>
+
+          <!-- Ausgabe eintragen -->
+          <div class="form-card">
+            <h2 class="form-title">Ausgabe eintragen</h2>
+            <div class="input-group">
+              <label for="gruppe-amount">Betrag</label>
+              <div class="amount-wrapper">
+                <span class="currency-symbol">€</span>
+                <input type="number" id="gruppe-amount" placeholder="0,00" inputmode="decimal" step="0.01" min="0" />
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="gruppe-desc">Beschreibung</label>
+              <input type="text" id="gruppe-desc" placeholder="z.B. Pizza, Bahn…" autocomplete="off" />
+            </div>
+            <div class="input-group">
+              <label for="gruppe-cat">Kategorie</label>
+              <select id="gruppe-cat">
+                <option value="essen">🍔 Essen & Trinken</option>
+                <option value="transport">🚌 Transport</option>
+                <option value="einkauf">🛒 Einkauf</option>
+                <option value="freizeit">🎮 Freizeit</option>
+                <option value="gesundheit">💊 Gesundheit</option>
+                <option value="sonstiges">📦 Sonstiges</option>
+              </select>
+            </div>
+            <button class="btn-save" id="gruppe-expense-save-btn">
+              <span class="btn-icon">✓</span> Speichern
+            </button>
+          </div>
+
+          <!-- Ausgaben-Liste -->
+          <div class="list-card">
+            <h2 class="list-title">Gemeinsame Ausgaben</h2>
+            <ul class="expense-list" id="gruppe-expense-list">
+              <li class="empty-state" id="gruppe-expense-empty">
+                <span class="empty-icon">👥</span>
+                <p>Noch keine Gruppenausgaben.</p>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.app -->
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <script src="xlsx.min.js"></script>
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
+  <script src="firebase-app.js?v=1"></script>
 </body>
 </html>

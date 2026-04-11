@@ -881,3 +881,175 @@ select option {
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   body { padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
 }
+
+/* ── Gruppe Tab ───────────────────────────────────── */
+.gruppe-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.gruppe-auth-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.gruppe-auth-btns .btn-save {
+  flex: 1;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary:active {
+  background: var(--surface-2);
+}
+
+.btn-ghost {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-ghost:active {
+  background: var(--surface-2);
+}
+
+.gruppe-msg {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 14px;
+}
+
+.gruppe-msg--error {
+  background: rgba(255, 92, 108, 0.15);
+  border: 1px solid rgba(255, 92, 108, 0.3);
+  color: var(--danger);
+}
+
+.gruppe-msg--success {
+  background: rgba(62, 207, 142, 0.12);
+  border: 1px solid rgba(62, 207, 142, 0.25);
+  color: var(--green);
+}
+
+.gruppe-user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.gruppe-user-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.gruppe-code-card {
+  padding: 18px 20px;
+}
+
+.gruppe-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.gruppe-code-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.gruppe-code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--accent);
+}
+
+.gruppe-code-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.gruppe-members {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gruppe-member {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gruppe-owner-badge {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.gruppe-expense-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.gruppe-expense-item:last-child {
+  border-bottom: none;
+}
+
+.gruppe-mine {
+  color: var(--accent);
+}
+
+.gruppe-del-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
