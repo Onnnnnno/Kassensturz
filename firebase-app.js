@@ -369,13 +369,32 @@ function renderGroupExpenses(expenses) {
   const shareTotal = total / memberCount;
   totalEl.textContent = formatEuro(shareTotal) + ' / Person';
 
-  // Mein Anteil = was ich insgesamt zahlen müsste
-  const iPaid   = expenses.filter(e => e.paidByUid === currentUser.uid).reduce((s, e) => s + e.amount, 0);
-  const myShare = shareTotal; // total / memberCount
+  // Offene Beträge berechnen (nur nicht-abgehakte)
+  let ichBekommeNoch = 0; // andere schulden mir noch (ich hab gezahlt, die nicht abgehakt)
+  let ichSchuldeNoch = 0; // ich schulde noch (anderer hat gezahlt, ich hab nicht abgehakt)
 
-  // Saldo: was ich gezahlt habe minus meinen eigenen Anteil
-  // positiv → andere schulden mir, negativ → ich schulde noch
-  const saldo = iPaid - myShare;
+  expenses.forEach(exp => {
+    const share      = exp.amount / memberCount;
+    const settledBy  = exp.settledBy || [];
+    const members    = (currentGroup && currentGroup.members) || [];
+
+    if (exp.paidByUid === currentUser.uid) {
+      // Ich hab gezahlt → jedes Mitglied das noch nicht abgehakt hat schuldet mir noch
+      members.forEach(m => {
+        if (m.uid !== currentUser.uid && !settledBy.includes(m.uid)) {
+          ichBekommeNoch += share;
+        }
+      });
+    } else {
+      // Jemand anderes hat gezahlt → falls ich nicht abgehakt habe schulde ich noch
+      if (!settledBy.includes(currentUser.uid)) {
+        ichSchuldeNoch += share;
+      }
+    }
+  });
+
+  const saldo   = ichBekommeNoch - ichSchuldeNoch;
+  const myShare = shareTotal;
 
   document.getElementById('gruppe-my-total').textContent = formatEuro(myShare);
 
@@ -383,13 +402,13 @@ function renderGroupExpenses(expenses) {
   const saldoSubEl = document.getElementById('gruppe-saldo-sub');
   saldoEl.textContent = formatEuro(Math.abs(saldo));
   if (saldo > 0.005) {
-    saldoEl.style.color   = 'var(--green)';
+    saldoEl.style.color    = 'var(--green)';
     saldoSubEl.textContent = 'bekommst du zurück';
   } else if (saldo < -0.005) {
-    saldoEl.style.color   = 'var(--danger)';
+    saldoEl.style.color    = 'var(--danger)';
     saldoSubEl.textContent = 'schuldest du noch';
   } else {
-    saldoEl.style.color   = '';
+    saldoEl.style.color    = '';
     saldoSubEl.textContent = 'quitt';
   }
 
