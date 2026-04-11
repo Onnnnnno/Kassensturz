@@ -148,61 +148,84 @@ async function loadUserGroup() {
 // ── Gruppe erstellen ──────────────────────────────────────────
 document.getElementById('gruppe-create-btn').addEventListener('click', async () => {
   const name = document.getElementById('gruppe-name-input').value.trim();
-  if (!name) return;
+  if (!name) { shake(document.getElementById('gruppe-name-input')); return; }
 
-  const code    = generateCode();
-  const groupRef = db.collection('groups').doc();
-  const groupData = {
-    name,
-    inviteCode: code,
-    createdBy:  currentUser.uid,
-    members:    [{ uid: currentUser.uid, email: currentUser.email }],
-    createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
-  };
+  const btn = document.getElementById('gruppe-create-btn');
+  btn.disabled = true;
+  btn.textContent = 'Wird erstellt…';
 
-  await groupRef.set(groupData);
-  await db.collection('users').doc(currentUser.uid).set({ groupId: groupRef.id }, { merge: true });
+  try {
+    const code     = generateCode();
+    const groupRef = db.collection('groups').doc();
+    const groupData = {
+      name,
+      inviteCode: code,
+      createdBy:  currentUser.uid,
+      members:    [{ uid: currentUser.uid, email: currentUser.email }],
+      createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
+    };
 
-  currentGroup = { id: groupRef.id, ...groupData };
-  renderGroupInfo();
-  showGroupView();
-  listenGroupExpenses(groupRef.id);
-  gruppeSuccess('Gruppe erstellt!');
+    await groupRef.set(groupData);
+    await db.collection('users').doc(currentUser.uid).set({ groupId: groupRef.id }, { merge: true });
+
+    currentGroup = { id: groupRef.id, ...groupData };
+    renderGroupInfo();
+    showGroupView();
+    listenGroupExpenses(groupRef.id);
+    gruppeSuccess('Gruppe erstellt!');
+  } catch (e) {
+    console.error(e);
+    gruppeError('Fehler: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">✓</span> Erstellen';
+  }
 });
 
 // ── Gruppe beitreten ──────────────────────────────────────────
 document.getElementById('gruppe-join-btn').addEventListener('click', async () => {
   const code = document.getElementById('gruppe-code-input').value.trim().toUpperCase();
-  if (!code) return;
+  if (!code) { shake(document.getElementById('gruppe-code-input')); return; }
 
-  const snap = await db.collection('groups').where('inviteCode', '==', code).limit(1).get();
-  if (snap.empty) {
-    gruppeError('Ungültiger Code.');
-    return;
+  const btn = document.getElementById('gruppe-join-btn');
+  btn.disabled = true;
+  btn.textContent = 'Suche…';
+
+  try {
+    const snap = await db.collection('groups').where('inviteCode', '==', code).limit(1).get();
+    if (snap.empty) {
+      gruppeError('Ungültiger Code.');
+      return;
+    }
+
+    const groupDoc  = snap.docs[0];
+    const groupId   = groupDoc.id;
+    const groupData = groupDoc.data();
+
+    const alreadyMember = groupData.members.some(m => m.uid === currentUser.uid);
+    if (!alreadyMember) {
+      await groupDoc.ref.update({
+        members: firebase.firestore.FieldValue.arrayUnion({
+          uid:   currentUser.uid,
+          email: currentUser.email,
+        }),
+      });
+    }
+
+    await db.collection('users').doc(currentUser.uid).set({ groupId }, { merge: true });
+
+    currentGroup = { id: groupId, ...groupData };
+    renderGroupInfo();
+    showGroupView();
+    listenGroupExpenses(groupId);
+    gruppeSuccess('Gruppe beigetreten!');
+  } catch (e) {
+    console.error(e);
+    gruppeError('Fehler: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">→</span> Beitreten';
   }
-
-  const groupDoc  = snap.docs[0];
-  const groupId   = groupDoc.id;
-  const groupData = groupDoc.data();
-
-  // Schon Mitglied?
-  const alreadyMember = groupData.members.some(m => m.uid === currentUser.uid);
-  if (!alreadyMember) {
-    await groupDoc.ref.update({
-      members: firebase.firestore.FieldValue.arrayUnion({
-        uid:   currentUser.uid,
-        email: currentUser.email,
-      }),
-    });
-  }
-
-  await db.collection('users').doc(currentUser.uid).set({ groupId }, { merge: true });
-
-  currentGroup = { id: groupId, ...groupData };
-  renderGroupInfo();
-  showGroupView();
-  listenGroupExpenses(groupId);
-  gruppeSuccess('Gruppe beigetreten!');
 });
 
 // ── Gruppe verlassen ──────────────────────────────────────────
