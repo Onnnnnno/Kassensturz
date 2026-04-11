@@ -58,6 +58,8 @@ function showGruppeLoggedOut() {
 function showGruppeLoggedIn() {
   document.getElementById('gruppe-auth').hidden    = true;
   document.getElementById('gruppe-main').hidden    = false;
+  document.getElementById('gruppe-no-group').hidden = true; // wird von loadUserGroup gesetzt
+  document.getElementById('gruppe-group').hidden   = true;
   const emailEl = document.getElementById('gruppe-user-email');
   if (emailEl) emailEl.textContent = currentUser.email;
 }
@@ -116,26 +118,31 @@ function authErrorMsg(code) {
 
 // ── Load User Group ───────────────────────────────────────────
 async function loadUserGroup() {
-  const userDoc = await db.collection('users').doc(currentUser.uid).get();
-  const groupId = userDoc.exists ? userDoc.data().groupId : null;
+  try {
+    const userDoc = await db.collection('users').doc(currentUser.uid).get();
+    const groupId = userDoc.exists ? userDoc.data().groupId : null;
 
-  if (!groupId) {
+    if (!groupId) {
+      showNoGroup();
+      return;
+    }
+
+    const groupDoc = await db.collection('groups').doc(groupId).get();
+    if (!groupDoc.exists) {
+      await db.collection('users').doc(currentUser.uid).update({ groupId: null });
+      showNoGroup();
+      return;
+    }
+
+    currentGroup = { id: groupId, ...groupDoc.data() };
+    renderGroupInfo();
+    showGroupView();
+    listenGroupExpenses(groupId);
+  } catch (e) {
+    console.error('Firestore Fehler:', e);
+    gruppeError('Datenbankfehler: ' + e.message);
     showNoGroup();
-    return;
   }
-
-  const groupDoc = await db.collection('groups').doc(groupId).get();
-  if (!groupDoc.exists) {
-    // Gruppe nicht mehr vorhanden
-    await db.collection('users').doc(currentUser.uid).update({ groupId: null });
-    showNoGroup();
-    return;
-  }
-
-  currentGroup = { id: groupId, ...groupDoc.data() };
-  renderGroupInfo();
-  showGroupView();
-  listenGroupExpenses(groupId);
 }
 
 // ── Gruppe erstellen ──────────────────────────────────────────
