@@ -307,14 +307,15 @@
     <!-- ── TAB: GRUPPE ── -->
     <div id="tab-gruppe" hidden>
 
+      <!-- Globale Meldungen (immer sichtbar) -->
+      <div id="gruppe-error" class="gruppe-msg gruppe-msg--error" hidden></div>
+      <div id="gruppe-success" class="gruppe-msg gruppe-msg--success" hidden></div>
+
       <!-- Nicht eingeloggt -->
       <div id="gruppe-auth">
         <div class="form-card">
           <h2 class="form-title">Anmelden / Registrieren</h2>
           <p class="gruppe-hint">Erstelle einen Account um gemeinsame Ausgaben mit anderen zu teilen.</p>
-
-          <div id="gruppe-error" class="gruppe-msg gruppe-msg--error" hidden></div>
-          <div id="gruppe-success" class="gruppe-msg gruppe-msg--success" hidden></div>
 
           <div class="input-group">
             <label for="gruppe-email">E-Mail</label>
@@ -442,9 +443,9 @@
 
   </div><!-- /.app -->
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="xlsx.min.js"></script>
   <script src="script.js?v=3"></script>
   <script src="firebase-app.js?v=1"></script>
