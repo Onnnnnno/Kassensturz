@@ -347,47 +347,97 @@ document.getElementById('gruppe-expense-save-btn').addEventListener('click', asy
 
 // ── Ausgaben rendern ──────────────────────────────────────────
 function renderGroupExpenses(expenses) {
-  const list    = document.getElementById('gruppe-expense-list');
-  const emptyEl = document.getElementById('gruppe-expense-empty');
-  const totalEl = document.getElementById('gruppe-total');
+  const list        = document.getElementById('gruppe-expense-list');
+  const emptyEl     = document.getElementById('gruppe-expense-empty');
+  const totalEl     = document.getElementById('gruppe-total');
+  const memberCount = (currentGroup && currentGroup.members)
+    ? currentGroup.members.length : 1;
 
   list.querySelectorAll('.gruppe-expense-item').forEach(el => el.remove());
 
   if (expenses.length === 0) {
     emptyEl.hidden = false;
     totalEl.textContent = '0,00 €';
+    document.getElementById('gruppe-my-total').textContent    = '0,00 €';
+    document.getElementById('gruppe-other-total').textContent = '0,00 €';
     return;
   }
   emptyEl.hidden = true;
 
-  // Summe
-  const total = expenses.reduce((s, e) => s + e.amount, 0);
-  totalEl.textContent = formatEuro(total);
+  // Gesamtanteil pro Person
+  const total      = expenses.reduce((s, e) => s + e.amount, 0);
+  const shareTotal = total / memberCount;
+  totalEl.textContent = formatEuro(shareTotal) + ' / Person';
 
-  // Meine Summe vs. andere
-  const myTotal    = expenses.filter(e => e.paidByUid === currentUser.uid).reduce((s, e) => s + e.amount, 0);
-  const otherTotal = total - myTotal;
-  document.getElementById('gruppe-my-total').textContent    = formatEuro(myTotal);
-  document.getElementById('gruppe-other-total').textContent = formatEuro(otherTotal);
+  // Von mir vorgestreckt vs. ich schulde noch
+  const iPaid    = expenses.filter(e => e.paidByUid === currentUser.uid).reduce((s, e) => s + e.amount, 0);
+  const iOwe     = expenses.filter(e => e.paidByUid !== currentUser.uid).reduce((s, e) => s + (e.amount / memberCount), 0);
+  document.getElementById('gruppe-my-total').textContent    = formatEuro(iPaid);
+  document.getElementById('gruppe-other-total').textContent = formatEuro(iOwe);
 
   expenses.forEach(exp => {
-    const meta    = categoryMeta[exp.category] || categoryMeta.sonstiges;
-    const isMe    = exp.paidByUid === currentUser.uid;
-    const dateStr = exp.date ? formatDate(exp.date) : '';
+    const meta        = categoryMeta[exp.category] || categoryMeta.sonstiges;
+    const isMe        = exp.paidByUid === currentUser.uid;
+    const dateStr     = exp.date ? formatDate(exp.date) : '';
+    const share       = exp.amount / memberCount;
+    const settledBy   = exp.settledBy || [];
+    const iSettled    = settledBy.includes(currentUser.uid);
+
+    // Wer hat noch nicht überwiesen (nur für Zahler sichtbar)
+    const members     = (currentGroup && currentGroup.members) || [];
+    const notSettled  = members.filter(m => m.uid !== exp.paidByUid && !settledBy.includes(m.uid));
+    const allSettled  = notSettled.length === 0 && members.length > 1;
+
     const li = document.createElement('li');
-    li.className = 'gruppe-expense-item';
+    li.className = 'gruppe-expense-item' + (allSettled ? ' gruppe-expense-settled' : '');
+
+    let settlementHtml = '';
+    if (!isMe) {
+      // Nicht-Zahler: Checkbox zum Abhaken
+      settlementHtml = `
+        <label class="gruppe-settle-label ${iSettled ? 'gruppe-settle-done' : ''}" title="Überweisung getätigt">
+          <input type="checkbox" class="gruppe-settle-cb" data-id="${exp.id}" ${iSettled ? 'checked' : ''} />
+          <span class="gruppe-settle-box">${iSettled ? '✓' : ''}</span>
+        </label>`;
+    } else if (members.length > 1) {
+      // Zahler: sieht offene Rückzahlungen
+      const openCount = notSettled.length;
+      settlementHtml = openCount > 0
+        ? `<span class="gruppe-open-badge">${openCount} offen</span>`
+        : `<span class="gruppe-done-badge">✓ alle</span>`;
+    }
+
     li.innerHTML = `
       <span class="expense-emoji">${meta.emoji}</span>
       <div class="expense-info">
         <div class="expense-desc">${escapeHtml(exp.description || 'Keine Beschreibung')}</div>
-        <div class="expense-cat">${isMe ? 'Du' : escapeHtml(exp.paidByEmail)} · ${dateStr}</div>
+        <div class="expense-cat">${isMe ? 'Du hast gezahlt' : escapeHtml(exp.paidByEmail)} · ${dateStr}</div>
+        <div class="gruppe-share-row">
+          <span class="gruppe-share-amount">Dein Anteil: ${formatEuro(share)}</span>
+          <span class="gruppe-full-amount">Gesamt: ${formatEuro(exp.amount)}</span>
+        </div>
       </div>
-      <span class="expense-amount ${isMe ? 'gruppe-mine' : ''}">-${formatEuro(exp.amount)}</span>
-      ${isMe ? `<button class="expense-delete gruppe-del-btn" data-id="${exp.id}">✕</button>` : ''}
+      <div class="gruppe-item-actions">
+        ${settlementHtml}
+        ${isMe ? `<button class="expense-delete gruppe-del-btn" data-id="${exp.id}">✕</button>` : ''}
+      </div>
     `;
     list.appendChild(li);
   });
 }
+
+// ── Settlement toggeln ────────────────────────────────────────
+document.getElementById('gruppe-expense-list').addEventListener('change', async (e) => {
+  const cb = e.target.closest('.gruppe-settle-cb');
+  if (!cb || !currentGroup) return;
+  const expId = cb.dataset.id;
+  const ref   = db.collection('groups').doc(currentGroup.id).collection('expenses').doc(expId);
+  if (cb.checked) {
+    await ref.update({ settledBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
+  } else {
+    await ref.update({ settledBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
+  }
+});
 
 // ── Ausgabe löschen ───────────────────────────────────────────
 document.getElementById('gruppe-expense-list').addEventListener('click', async (e) => {
