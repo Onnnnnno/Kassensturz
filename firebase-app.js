@@ -276,10 +276,42 @@ function listenGroupExpenses(groupId) {
   groupListener = db.collection('groups').doc(groupId)
     .collection('expenses')
     .orderBy('createdAt', 'desc')
-    .limit(50)
+    .limit(200)
     .onSnapshot(snap => {
-      renderGroupExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const expenses = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderGroupExpenses(expenses);
+      updateGruppenShare(expenses);
     });
+}
+
+// ── Gruppenanteil berechnen & in Übersicht einfließen ─────────
+function updateGruppenShare(groupExpenses) {
+  const memberCount = (currentGroup && currentGroup.members)
+    ? currentGroup.members.length : 1;
+
+  const today     = new Date().toISOString().slice(0, 10);
+  const thisMonth = today.slice(0, 7);
+
+  const todayTotal = groupExpenses
+    .filter(e => e.date === today)
+    .reduce((s, e) => s + e.amount, 0);
+
+  const monthTotal = groupExpenses
+    .filter(e => e.date && e.date.startsWith(thisMonth))
+    .reduce((s, e) => s + e.amount, 0);
+
+  window.gruppenShare = {
+    todayShare:  todayTotal  / memberCount,
+    monthShare:  monthTotal  / memberCount,
+    memberCount,
+    groupName: currentGroup ? currentGroup.name : '',
+  };
+
+  // Übersicht neu rendern falls gerade sichtbar
+  if (typeof renderUebersicht === 'function' &&
+      !document.getElementById('tab-uebersicht').hidden) {
+    renderUebersicht();
+  }
 }
 
 // ── Ausgabe eintragen ─────────────────────────────────────────

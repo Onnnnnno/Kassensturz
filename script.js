@@ -403,29 +403,41 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
+// ── Gruppenanteil (wird von firebase-app.js gesetzt) ──────────
+window.gruppenShare = { todayShare: 0, monthShare: 0, memberCount: 0, groupName: '' };
+
 // ── Übersicht rendern ─────────────────────────────────────────
 function renderUebersicht() {
   const aboMonthly  = monthlyAboTotal();
   const aboDaily    = dailyAboShare();
   const todayExp    = expenses.reduce((s, e) => s + e.amount, 0);
-  const todayTotal  = todayExp + aboDaily;
   const allDays     = getAllExpenseDays();
+
+  // Gruppenanteil
+  const gs           = window.gruppenShare;
+  const groupToday   = gs.todayShare;
+  const groupMonth   = gs.monthShare;
+
+  const todayTotal  = todayExp + aboDaily + groupToday;
 
   // Monatsausgaben (alle Tage dieses Monats)
   const thisMonth = new Date().toISOString().slice(0, 7);
   const monthExpenses = allDays
     .filter(d => d.date.startsWith(thisMonth))
     .reduce((s, d) => s + d.total, 0);
-  const monthTotal = monthExpenses + aboMonthly;
+  const monthTotal = monthExpenses + aboMonthly + groupMonth;
 
   // Karten oben befüllen
   document.getElementById('ueb-total-today').textContent = formatEuro(todayTotal);
-  document.getElementById('ueb-split-today').textContent =
-    `${formatEuro(todayExp)} Ausgaben + ${formatEuro(aboDaily)} Abos`;
+
+  let splitToday = `${formatEuro(todayExp)} Ausgaben + ${formatEuro(aboDaily)} Abos`;
+  if (groupToday > 0) splitToday += ` + ${formatEuro(groupToday)} Gruppe`;
+  document.getElementById('ueb-split-today').textContent = splitToday;
 
   document.getElementById('ueb-month-total').textContent = formatEuro(monthTotal);
-  document.getElementById('ueb-month-sub').textContent   =
-    `${formatEuro(monthExpenses)} + ${formatEuro(aboMonthly)} Abos`;
+  let splitMonth = `${formatEuro(monthExpenses)} + ${formatEuro(aboMonthly)} Abos`;
+  if (groupMonth > 0) splitMonth += ` + ${formatEuro(groupMonth)} Gruppe`;
+  document.getElementById('ueb-month-sub').textContent = splitMonth;
 
   document.getElementById('ueb-abo-monthly').textContent = formatEuro(aboMonthly);
   document.getElementById('ueb-abo-daily').textContent   = `${formatEuro(aboDaily)} pro Tag`;
