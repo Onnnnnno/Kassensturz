@@ -1,3 +1,13 @@
+// ── Timeout Helper ────────────────────────────────────────────
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Zeitüberschreitung – Firestore nicht erreichbar. Wurde die Datenbank in Firebase erstellt?')), ms)
+    )
+  ]);
+}
+
 // ── Firebase Init ─────────────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyASXGYB1PfzcPALugEbN0zyIrzJfN_ssus",
@@ -165,8 +175,8 @@ document.getElementById('gruppe-create-btn').addEventListener('click', async () 
       createdAt:  firebase.firestore.FieldValue.serverTimestamp(),
     };
 
-    await groupRef.set(groupData);
-    await db.collection('users').doc(currentUser.uid).set({ groupId: groupRef.id }, { merge: true });
+    await withTimeout(groupRef.set(groupData));
+    await withTimeout(db.collection('users').doc(currentUser.uid).set({ groupId: groupRef.id }, { merge: true }));
 
     currentGroup = { id: groupRef.id, ...groupData };
     renderGroupInfo();
@@ -192,7 +202,7 @@ document.getElementById('gruppe-join-btn').addEventListener('click', async () =>
   btn.textContent = 'Suche…';
 
   try {
-    const snap = await db.collection('groups').where('inviteCode', '==', code).limit(1).get();
+    const snap = await withTimeout(db.collection('groups').where('inviteCode', '==', code).limit(1).get());
     if (snap.empty) {
       gruppeError('Ungültiger Code.');
       return;
