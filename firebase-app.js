@@ -369,11 +369,29 @@ function renderGroupExpenses(expenses) {
   const shareTotal = total / memberCount;
   totalEl.textContent = formatEuro(shareTotal) + ' / Person';
 
-  // Von mir vorgestreckt vs. ich schulde noch
-  const iPaid    = expenses.filter(e => e.paidByUid === currentUser.uid).reduce((s, e) => s + e.amount, 0);
-  const iOwe     = expenses.filter(e => e.paidByUid !== currentUser.uid).reduce((s, e) => s + (e.amount / memberCount), 0);
-  document.getElementById('gruppe-my-total').textContent    = formatEuro(iPaid);
-  document.getElementById('gruppe-other-total').textContent = formatEuro(iOwe);
+  // Mein Anteil = was ich insgesamt zahlen müsste
+  const iPaid   = expenses.filter(e => e.paidByUid === currentUser.uid).reduce((s, e) => s + e.amount, 0);
+  const myShare = shareTotal; // total / memberCount
+
+  // Saldo: was ich gezahlt habe minus meinen eigenen Anteil
+  // positiv → andere schulden mir, negativ → ich schulde noch
+  const saldo = iPaid - myShare;
+
+  document.getElementById('gruppe-my-total').textContent = formatEuro(myShare);
+
+  const saldoEl    = document.getElementById('gruppe-other-total');
+  const saldoSubEl = document.getElementById('gruppe-saldo-sub');
+  saldoEl.textContent = formatEuro(Math.abs(saldo));
+  if (saldo > 0.005) {
+    saldoEl.style.color   = 'var(--green)';
+    saldoSubEl.textContent = 'bekommst du zurück';
+  } else if (saldo < -0.005) {
+    saldoEl.style.color   = 'var(--danger)';
+    saldoSubEl.textContent = 'schuldest du noch';
+  } else {
+    saldoEl.style.color   = '';
+    saldoSubEl.textContent = 'quitt';
+  }
 
   expenses.forEach(exp => {
     const meta        = categoryMeta[exp.category] || categoryMeta.sonstiges;
